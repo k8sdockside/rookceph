@@ -1,0 +1,235 @@
+{
+    "$schema": "https://raw.githubusercontent.com/k8sdockside/k8sdockside/main/docs/plugin.schema.json",
+    "id": "rookceph",
+    "name": "Rook Ceph",
+    "version": "1.0.0",
+    "minAppVersion": "0.1.1",
+    "tagline": "Ceph in Kubernetes: health, capacity, pools and every storage class",
+    "icon": "database",
+    "logo": "logo.svg",
+    "category": "storage",
+    "docs": "https://rook.io/docs/rook/latest/",
+    "author": "K8s Dockside",
+    "authorUrl": "https://github.com/k8sdockside",
+    "links": [
+        { "label": "rook.io", "url": "https://rook.io" },
+        { "label": "Documentation", "url": "https://rook.io/docs/rook/latest/" },
+        { "label": "Ceph health checks", "url": "https://docs.ceph.com/en/latest/rados/operations/health-checks/" },
+        { "label": "GitHub", "url": "https://github.com/rook/rook" },
+        { "label": "Plugin source", "url": "https://github.com/k8sdockside/rookceph" }
+    ],
+    "description": "Rook runs Ceph in Kubernetes: mons hold the maps, OSDs hold the data, and three CSI drivers hand it out as block volumes, shared filesystems, NFS exports and S3 buckets.\n\nThe Dashboard answers what you open Ceph for — is it HEALTH_OK, how full is it, and is any daemon down — with Ceph's own health checks written out in full rather than hidden behind a status field. Storage classes draws every Ceph storage class in the cluster, grouped by what it actually hands a workload, each tied to the pool, filesystem, object store or NFS server behind it and to the claims using it. Pools & filesystems shows how each pool keeps its data — three copies, or EC 4+2 — and which ones have no redundancy at all. Daemons & OSDs lays out every mon, mgr, OSD, MDS and gateway by the machine it runs on.\n\nIt works on a cluster that runs Ceph, on one that only consumes an external Ceph through Rook, and on one that is a pure CSI client with no Rook operator at all — and it says which of the three it is looking at rather than drawing an empty dashboard.\n\nPersistentVolumeClaims, StorageClasses, Nodes and CephClusters each get a panel of their own. The one change it can ask for — turning the Ceph dashboard on or off — is shown to you before it is made.",
+
+    "requires": [
+        { "kind": "crd:cephclusters.ceph.rook.io", "label": "Ceph clusters" },
+        { "kind": "storageclasses", "label": "Storage classes", "optional": true },
+        { "kind": "crd:cephblockpools.ceph.rook.io", "label": "Block pools", "optional": true },
+        { "kind": "crd:cephfilesystems.ceph.rook.io", "label": "Filesystems", "optional": true },
+        { "kind": "crd:cephobjectstores.ceph.rook.io", "label": "Object stores", "optional": true },
+        { "kind": "crd:cephobjectstoreusers.ceph.rook.io", "label": "Object store users", "optional": true },
+        { "kind": "crd:cephnfses.ceph.rook.io", "label": "NFS servers", "optional": true },
+        { "kind": "crd:cephclients.ceph.rook.io", "label": "Ceph clients", "optional": true },
+        { "kind": "crd:cephrbdmirrors.ceph.rook.io", "label": "RBD mirrors", "optional": true },
+        { "kind": "crd:cephfilesystemmirrors.ceph.rook.io", "label": "Filesystem mirrors", "optional": true },
+        { "kind": "crd:cephfilesystemsubvolumegroups.ceph.rook.io", "label": "Subvolume groups", "optional": true },
+        { "kind": "crd:cephblockpoolradosnamespaces.ceph.rook.io", "label": "RADOS namespaces", "optional": true },
+        { "kind": "crd:cephobjectrealms.ceph.rook.io", "label": "Object realms", "optional": true },
+        { "kind": "crd:cephobjectzones.ceph.rook.io", "label": "Object zones", "optional": true },
+        { "kind": "crd:cephobjectzonegroups.ceph.rook.io", "label": "Object zone groups", "optional": true },
+        { "kind": "crd:cephbuckettopics.ceph.rook.io", "label": "Bucket topics", "optional": true },
+        { "kind": "crd:cephbucketnotifications.ceph.rook.io", "label": "Bucket notifications", "optional": true },
+        { "kind": "crd:cephcosidrivers.ceph.rook.io", "label": "COSI drivers", "optional": true },
+        { "kind": "crd:objectbucketclaims.objectbucket.io", "label": "Bucket claims", "optional": true },
+        { "kind": "crd:objectbuckets.objectbucket.io", "label": "Buckets", "optional": true }
+    ],
+
+    "overview": { "entry": "overview.html" },
+
+    "views": [
+        {
+            "id": "clusters",
+            "label": "Ceph clusters",
+            "icon": "layers",
+            "type": "custom",
+            "entry": "clusters.html",
+            "focus": { "kind": "crd:cephclusters.ceph.rook.io" }
+        },
+        { "id": "classes", "label": "Storage classes", "icon": "grant", "type": "custom", "entry": "storage.html" },
+        { "id": "pools", "label": "Pools & filesystems", "icon": "database", "type": "custom", "entry": "pools.html" },
+        { "id": "daemons", "label": "Daemons & OSDs", "icon": "server", "type": "custom", "entry": "daemons.html" },
+
+        { "id": "ceph-clusters", "label": "CephClusters", "icon": "layers", "kind": "crd:cephclusters.ceph.rook.io" },
+        { "id": "block-pools", "label": "Block pools", "icon": "drive", "kind": "crd:cephblockpools.ceph.rook.io" },
+        { "id": "filesystems", "label": "Filesystems", "icon": "folder", "kind": "crd:cephfilesystems.ceph.rook.io" },
+        { "id": "subvolume-groups", "label": "Subvolume groups", "icon": "folder", "kind": "crd:cephfilesystemsubvolumegroups.ceph.rook.io" },
+        { "id": "object-stores", "label": "Object stores", "icon": "box", "kind": "crd:cephobjectstores.ceph.rook.io" },
+        { "id": "object-users", "label": "Object store users", "icon": "user", "kind": "crd:cephobjectstoreusers.ceph.rook.io" },
+        { "id": "object-realms", "label": "Object realms", "icon": "globe", "kind": "crd:cephobjectrealms.ceph.rook.io" },
+        { "id": "object-zones", "label": "Object zones", "icon": "globe", "kind": "crd:cephobjectzones.ceph.rook.io" },
+        { "id": "object-zonegroups", "label": "Object zone groups", "icon": "globe", "kind": "crd:cephobjectzonegroups.ceph.rook.io" },
+        { "id": "bucket-claims", "label": "Bucket claims", "icon": "grant", "kind": "crd:objectbucketclaims.objectbucket.io" },
+        { "id": "buckets", "label": "Buckets", "icon": "box", "kind": "crd:objectbuckets.objectbucket.io" },
+        { "id": "bucket-topics", "label": "Bucket topics", "icon": "bell", "kind": "crd:cephbuckettopics.ceph.rook.io" },
+        { "id": "bucket-notifications", "label": "Bucket notifications", "icon": "bell", "kind": "crd:cephbucketnotifications.ceph.rook.io" },
+        { "id": "nfs", "label": "NFS servers", "icon": "share", "kind": "crd:cephnfses.ceph.rook.io" },
+        { "id": "rados-namespaces", "label": "RADOS namespaces", "icon": "layers", "kind": "crd:cephblockpoolradosnamespaces.ceph.rook.io" },
+        { "id": "ceph-clients", "label": "Ceph clients", "icon": "user", "kind": "crd:cephclients.ceph.rook.io" },
+        { "id": "rbd-mirrors", "label": "RBD mirrors", "icon": "repeat", "kind": "crd:cephrbdmirrors.ceph.rook.io" },
+        { "id": "fs-mirrors", "label": "Filesystem mirrors", "icon": "repeat", "kind": "crd:cephfilesystemmirrors.ceph.rook.io" },
+        { "id": "cosi-drivers", "label": "COSI drivers", "icon": "chip", "kind": "crd:cephcosidrivers.ceph.rook.io" },
+
+        { "id": "storage-classes", "label": "Storage classes (all)", "icon": "grant", "kind": "storageclasses" },
+        { "id": "mons", "label": "Monitors", "icon": "shield", "kind": "pods", "selector": "app=rook-ceph-mon" },
+        { "id": "mgrs", "label": "Managers", "icon": "gauge", "kind": "pods", "selector": "app=rook-ceph-mgr" },
+        { "id": "osds", "label": "OSDs", "icon": "drive", "kind": "pods", "selector": "app=rook-ceph-osd" },
+        { "id": "mds-pods", "label": "Metadata servers", "icon": "folder", "kind": "pods", "selector": "app=rook-ceph-mds" },
+        { "id": "rgw-pods", "label": "Object gateways", "icon": "gateway", "kind": "pods", "selector": "app=rook-ceph-rgw" },
+        { "id": "operator", "label": "Operator", "icon": "rocket", "kind": "pods", "selector": "app=rook-ceph-operator" },
+        {
+            "id": "csi",
+            "label": "CSI drivers",
+            "icon": "chip",
+            "kind": "pods",
+            "selector": "app in (csi-rbdplugin,csi-rbdplugin-provisioner,csi-cephfsplugin,csi-cephfsplugin-provisioner,csi-nfsplugin,csi-nfsplugin-provisioner)"
+        }
+    ],
+
+    "cards": [
+        {
+            "label": "Ceph health",
+            "kind": "crd:cephclusters.ceph.rook.io",
+            "groupBy": "status.ceph.health",
+            "tones": { "HEALTH_OK": "ok", "HEALTH_WARN": "warn", "HEALTH_ERR": "error" }
+        },
+        {
+            "label": "Cluster phase",
+            "kind": "crd:cephclusters.ceph.rook.io",
+            "groupBy": "status.phase",
+            "tones": { "Ready": "ok", "Connected": "ok", "Progressing": "warn", "Connecting": "warn", "Failure": "error", "Deleting": "warn" }
+        },
+        {
+            "label": "Block pools",
+            "kind": "crd:cephblockpools.ceph.rook.io",
+            "groupBy": "status.phase",
+            "tones": { "Ready": "ok", "Progressing": "warn", "Failure": "error", "Deleting": "warn" }
+        },
+        {
+            "label": "Filesystems",
+            "kind": "crd:cephfilesystems.ceph.rook.io",
+            "groupBy": "status.phase",
+            "tones": { "Ready": "ok", "Progressing": "warn", "Failure": "error", "Deleting": "warn" }
+        },
+        {
+            "label": "Object stores",
+            "kind": "crd:cephobjectstores.ceph.rook.io",
+            "groupBy": "status.phase",
+            "tones": { "Ready": "ok", "Connected": "ok", "Progressing": "warn", "Failure": "error" }
+        },
+        {
+            "label": "OSDs",
+            "kind": "pods",
+            "selector": "app=rook-ceph-osd",
+            "groupBy": "status.phase",
+            "tones": { "Running": "ok", "Pending": "warn", "Failed": "error", "Unknown": "warn" }
+        },
+        {
+            "label": "Monitors",
+            "kind": "pods",
+            "selector": "app=rook-ceph-mon",
+            "groupBy": "status.phase",
+            "tones": { "Running": "ok", "Pending": "warn", "Failed": "error", "Unknown": "warn" }
+        },
+        {
+            "label": "Bucket claims",
+            "kind": "crd:objectbucketclaims.objectbucket.io",
+            "groupBy": "status.phase",
+            "tones": { "Bound": "ok", "Pending": "warn", "Released": "info", "Failed": "error" }
+        }
+    ],
+
+    "charts": [
+        {
+            "id": "cluster-used",
+            "label": "Raw capacity used",
+            "attach": "overview",
+            "query": "sum(ceph_cluster_total_used_bytes)",
+            "unit": "bytes",
+            "description": "What Ceph's OSDs hold, before replication is divided out — the number the full ratio is measured against."
+        },
+        {
+            "id": "cluster-total",
+            "label": "Raw capacity",
+            "attach": "overview",
+            "query": "sum(ceph_cluster_total_bytes)",
+            "unit": "bytes",
+            "description": "Every byte the OSDs add up to. It steps up when you add disks and down when one is lost."
+        },
+        {
+            "id": "osds-up",
+            "label": "OSDs up",
+            "attach": "overview",
+            "query": "sum(ceph_osd_up)",
+            "unit": "count",
+            "description": "How many OSDs Ceph can talk to. A dip here is what a degraded cluster looks like before the alerts arrive."
+        },
+        {
+            "id": "health-status",
+            "label": "Health status",
+            "attach": "overview",
+            "query": "max(ceph_health_status)",
+            "unit": "count",
+            "description": "0 is HEALTH_OK, 1 is HEALTH_WARN, 2 is HEALTH_ERR — the shape of the last hour's health in one line."
+        },
+        {
+            "id": "pool-throughput",
+            "label": "Pool throughput",
+            "attach": "overview",
+            "query": "sum(rate(ceph_pool_rd_bytes[5m])) or sum(rate(ceph_pool_wr_bytes[5m]))",
+            "unit": "bytes/s",
+            "description": "Read and write throughput across every pool."
+        },
+        {
+            "id": "pool-iops",
+            "label": "Pool IOPS",
+            "attach": "overview",
+            "query": "sum(rate(ceph_pool_rd[5m])) or sum(rate(ceph_pool_wr[5m]))",
+            "unit": "ops/s",
+            "description": "Read and write operations across every pool."
+        }
+    ],
+
+    "sections": [
+        { "id": "pvc-ceph", "label": "Ceph volume", "kind": "persistentvolumeclaims", "entry": "pvc.html", "height": 210 },
+        { "id": "sc-ceph", "label": "Ceph storage class", "kind": "storageclasses", "entry": "sc.html", "height": 230 },
+        { "id": "node-daemons", "label": "Ceph daemons here", "kind": "nodes", "entry": "node.html", "height": 190 },
+        { "id": "cluster-health", "label": "Ceph health & capacity", "kind": "crd:cephclusters.ceph.rook.io", "entry": "cluster.html", "height": 240 }
+    ],
+
+    "actions": [
+        {
+            "id": "enable-dashboard",
+            "label": "Enable the Ceph dashboard",
+            "icon": "monitor",
+            "kind": "crd:cephclusters.ceph.rook.io",
+            "confirm": "Turn the Ceph dashboard on for {name}? Rook starts the dashboard module on the active manager and creates a Service for it. Nothing about the data changes.",
+            "done": "the Ceph dashboard is being turned on for {name}",
+            "when": [{ "field": "spec.dashboard.enabled", "notIn": ["true"] }],
+            "request": { "type": "patch", "patch": { "spec": { "dashboard": { "enabled": true } } } }
+        },
+        {
+            "id": "disable-dashboard",
+            "label": "Disable the Ceph dashboard",
+            "icon": "close",
+            "kind": "crd:cephclusters.ceph.rook.io",
+            "confirm": "Turn the Ceph dashboard off for {name}? The module and its Service go away; the cluster and its data are untouched.",
+            "done": "the Ceph dashboard is being turned off for {name}",
+            "when": [{ "field": "spec.dashboard.enabled", "in": ["true"] }],
+            "request": { "type": "patch", "patch": { "spec": { "dashboard": { "enabled": false } } } }
+        }
+    ],
+
+    "ui": {
+        "kinds": ["pods", "persistentvolumes"],
+        "write": true
+    }
+}
