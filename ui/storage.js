@@ -73,6 +73,7 @@
       server: p["server"] ?? "",
       objectStore: p["objectStoreName"] ?? "",
       objectStoreNamespace: p["objectStoreNamespace"] ?? "",
+      endpoint: p["endpoint"] ?? "",
       encrypted: p["encrypted"] === "true",
       fsType: p["csi.storage.k8s.io/fstype"] ?? "",
       imageFeatures: p["imageFeatures"] ?? ""
@@ -132,14 +133,15 @@
     if (found.cluster === null) {
       return backing.clusterID ? `No CephCluster in namespace ${backing.clusterID}: this class provisions from a Ceph outside this cluster, or from one that has been removed.` : "";
     }
+    if (found.cluster.spec?.external?.enable === true && kind !== "bucket") return "";
     if (kind === "block" && backing.pool && found.pool === null) {
       return `No CephBlockPool named ${backing.pool}. Volumes will stay Pending unless the pool was made outside Rook.`;
     }
     if (kind === "file" && backing.fsName && found.filesystem === null) {
       return `No CephFilesystem named ${backing.fsName}. Volumes will stay Pending unless the filesystem was made outside Rook.`;
     }
-    if (kind === "bucket" && backing.objectStore && found.objectStore === null) {
-      return `No CephObjectStore named ${backing.objectStore}. Bucket claims will stay Pending.`;
+    if (kind === "bucket" && backing.objectStore && found.objectStore === null && !backing.endpoint) {
+      return `No CephObjectStore named ${backing.objectStore}. Bucket claims will stay Pending unless the class names an endpoint instead.`;
     }
     if (kind === "nfs" && backing.nfsCluster && found.nfs === null) {
       return `No CephNFS named ${backing.nfsCluster}. Volumes will stay Pending.`;

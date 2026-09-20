@@ -81,6 +81,12 @@ export interface Backing {
     /** The object store an ObjectBucketClaim's bucket is made in. */
     objectStore: string;
     objectStoreNamespace: string;
+    /**
+     * An RGW address given straight to the bucket provisioner. With one set,
+     * Rook skips looking up the CephObjectStore altogether -- see the note in
+     * `problemOf` -- so a class that has it needs no CR.
+     */
+    endpoint: string;
     /** Whether volumes are encrypted at rest by the CSI driver. */
     encrypted: boolean;
     /** The filesystem the driver formats a block volume with. */
@@ -134,6 +140,7 @@ function backingOf(parameters: Record<string, string> | null | undefined): Backi
         server: p['server'] ?? '',
         objectStore: p['objectStoreName'] ?? '',
         objectStoreNamespace: p['objectStoreNamespace'] ?? '',
+        endpoint: p['endpoint'] ?? '',
         encrypted: p['encrypted'] === 'true',
         fsType: p['csi.storage.k8s.io/fstype'] ?? '',
         imageFeatures: p['imageFeatures'] ?? '',
@@ -224,8 +231,10 @@ export function poolName(pool: CephBlockPool): string {
  *
  * The honest cases only. A class whose CephCluster is not in this cluster is
  * *not* broken: that is exactly what a client-only cluster looks like, and
- * saying "missing" about it would be wrong on every such cluster. It is only
- * called out when Rook is here and the thing it names is not.
+ * saying "missing" about it would be wrong on every such cluster. Neither is a
+ * class backed by an *external* CephCluster, whose pools and filesystems were
+ * made on the Ceph outside and never have a CR here. It is only called out
+ * when Rook owns the Ceph and the thing the class names is not there.
  */
 function problemOf(
     kind: ClassKind,
@@ -243,14 +252,29 @@ function problemOf(
             ? `No CephCluster in namespace ${backing.clusterID}: this class provisions from a Ceph outside this cluster, or from one that has been removed.`
             : '';
     }
+    // An external CephCluster only ever *connects* to a Ceph; it does not own
+    // it. Rook's own import-external-cluster.sh creates StorageClasses and
+    // nothing else, so the pools and filesystems behind them have no CR here
+    // to find -- and ceph-csi does not want one: it talks to Ceph with the
+    // clusterID and the pool or filesystem name straight off the class. Their
+    // absence is the normal state of an external cluster, not a fault.
+    //
+    // Buckets are the exception, and are left to the check below. They are
+    // not provisioned by ceph-csi but by Rook's own bucket provisioner, which
+    // does read the CephObjectStore -- so there, a missing one is real.
+    if (found.cluster.spec?.external?.enable === true && kind !== 'bucket') return '';
+
     if (kind === 'block' && backing.pool && found.pool === null) {
         return `No CephBlockPool named ${backing.pool}. Volumes will stay Pending unless the pool was made outside Rook.`;
     }
     if (kind === 'file' && backing.fsName && found.filesystem === null) {
         return `No CephFilesystem named ${backing.fsName}. Volumes will stay Pending unless the filesystem was made outside Rook.`;
     }
-    if (kind === 'bucket' && backing.objectStore && found.objectStore === null) {
-        return `No CephObjectStore named ${backing.objectStore}. Bucket claims will stay Pending.`;
+    // `endpoint` is Rook's backward-compatible path for an object store
+    // outside the cluster: given one, the provisioner uses it and never looks
+    // the CephObjectStore up, so its absence breaks nothing.
+    if (kind === 'bucket' && backing.objectStore && found.objectStore === null && !backing.endpoint) {
+        return `No CephObjectStore named ${backing.objectStore}. Bucket claims will stay Pending unless the class names an endpoint instead.`;
     }
     if (kind === 'nfs' && backing.nfsCluster && found.nfs === null) {
         return `No CephNFS named ${backing.nfsCluster}. Volumes will stay Pending.`;

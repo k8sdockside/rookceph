@@ -113,6 +113,66 @@ describe('classView, with Rook in the cluster', () => {
     });
 });
 
+describe('classView, on an external cluster', () => {
+    // The shape this plugin got wrong: Rook is installed and a CephCluster is
+    // right there, but it only connects to a Ceph run elsewhere. The pools and
+    // filesystems were made on that Ceph, so no CephBlockPool or
+    // CephFilesystem CR exists -- and calling every class broken for it would
+    // be wrong on every external cluster.
+    const external: CephCluster = { metadata: { name: 'rook-ceph', namespace: 'rook-ceph' }, spec: { external: { enable: true } }, status: {} };
+    const backends = { clusters: [external], pools: [], filesystems: [], objectStores: [], nfses: [], claims: [] };
+
+    it('does not call a block class broken for a pool that lives on the external Ceph', () => {
+        const view = classView(sc('ceph-rbd', 'rook-ceph.rbd.csi.ceph.com', { clusterID: 'rook-ceph', pool: 'cephpool11' }), backends);
+        expect(view?.cluster?.metadata.name).toBe('rook-ceph');
+        expect(view?.pool).toBe(null);
+        expect(view?.problem).toBe('');
+        expect(view?.tone).toBe('ok');
+    });
+
+    it('does not call a CephFS class broken for a filesystem that lives on the external Ceph', () => {
+        const view = classView(sc('ceph-filesystem', 'rook-ceph.cephfs.csi.ceph.com', { clusterID: 'rook-ceph', fsName: 'cephfs', pool: 'cephfs_data' }), backends);
+        expect(view?.filesystem).toBe(null);
+        expect(view?.problem).toBe('');
+        expect(view?.tone).toBe('ok');
+    });
+
+    it('still says so when the class names a namespace with no CephCluster at all', () => {
+        const view = classView(sc('ceph-rbd', 'rook-ceph.rbd.csi.ceph.com', { clusterID: 'elsewhere', pool: 'cephpool11' }), backends);
+        expect(view?.problem).toContain('No CephCluster in namespace elsewhere');
+    });
+});
+
+describe('classView, on an external cluster', () => {
+    // A bucket class is not provisioned by ceph-csi but by Rook's own bucket
+    // provisioner, which reads the CephObjectStore unless the class hands it
+    // an endpoint instead. So the external exemption must not cover it.
+    const external: CephCluster = { metadata: { name: 'rook-ceph', namespace: 'rook-ceph' }, spec: { external: { enable: true } }, status: {} };
+    const backends = { clusters: [external], pools: [], filesystems: [], objectStores: [], nfses: [], claims: [] };
+
+    it('still wants a CephObjectStore for a bucket class', () => {
+        const view = classView(sc('bucket', 'rook-ceph.ceph.rook.io/bucket', { objectStoreName: 'my-store', objectStoreNamespace: 'rook-ceph' }), backends);
+        expect(view?.problem).toContain('No CephObjectStore named my-store');
+    });
+
+    it('wants nothing when the bucket class names an endpoint instead', () => {
+        const view = classView(sc('bucket', 'rook-ceph.ceph.rook.io/bucket', { objectStoreName: 'my-store', endpoint: 'https://s3.example:443' }), backends);
+        expect(view?.problem).toBe('');
+        expect(view?.tone).toBe('ok');
+    });
+
+    // The same exemption on a cluster that is not external: `endpoint` is
+    // about how the provisioner resolves the store, not about where Ceph is.
+    it('accepts an endpoint on a converged cluster too', () => {
+        const converged: CephCluster = { metadata: { name: 'rook-ceph', namespace: 'rook-ceph' }, spec: {}, status: {} };
+        const view = classView(sc('bucket', 'rook-ceph.ceph.rook.io/bucket', { objectStoreName: 'gone', endpoint: 'https://s3.example:443' }), {
+            ...backends,
+            clusters: [converged],
+        });
+        expect(view?.problem).toBe('');
+    });
+});
+
 describe('classView, on a client-only cluster', () => {
     // The case the whole model is shaped around: ceph-csi and a handful of
     // storage classes, no Rook at all. Calling every class broken here would
