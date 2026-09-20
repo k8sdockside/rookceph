@@ -642,6 +642,37 @@ input[type='search'] {
     max-width: 380px;
 }
 
+/*
+ * The values in a dropdown.
+ *
+ * A select's options are drawn by the platform in a window of its own, and
+ * that window does not inherit the select's background -- only its colour.
+ * Setting one and not the other, which the rule above did, leaves a dark
+ * theme painting near-white text onto the platform's light popup: every value
+ * unreadable except the one under the cursor, which the platform colours
+ * itself. So both are set here, and the popup cannot disagree with the
+ * control it came out of.
+ *
+ * bg-raised rather than bg-panel because that is what the select itself is,
+ * and it is opaque in every theme the app ships -- a translucent token would
+ * let the platform's own backdrop through and put us back where we started.
+ */
+select option {
+    background-color: var(--bg-raised);
+    color: var(--text);
+}
+
+/*
+ * Giving every option a background of its own takes the selected row's
+ * highlight with it, on the engines that were drawing one. This puts it back,
+ * in the colour the app marks a chosen thing with. An engine that draws its
+ * own highlight instead -- GTK does -- ignores this and is no worse off.
+ */
+select option:checked {
+    background-color: var(--accent);
+    color: var(--accent-text);
+}
+
 button:hover,
 select:hover {
     background: var(--bg-hover);
