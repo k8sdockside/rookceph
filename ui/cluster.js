@@ -1,4 +1,4 @@
-// Built by scripts/build.mjs from src/ -- edit the TypeScript there, not this file.
+// Built by k8sdockside-plugin from src/ -- edit the TypeScript there, not this file.
 "use strict";
 (() => {
   // src/model/health.ts
@@ -131,7 +131,7 @@
     return Math.max(0, Math.min(100, part / whole * 100));
   }
 
-  // src/ui/dom.ts
+  // node_modules/@k8sdockside/plugin-sdk/dom.js
   function el(tag, attrs = {}, ...children) {
     const node = document.createElement(tag);
     for (const [name, value] of Object.entries(attrs)) {
@@ -140,23 +140,23 @@
       else if (name === "text") node.textContent = String(value);
       else node.setAttribute(name, String(value));
     }
-    for (const child of children) {
-      if (child === null || child === void 0 || child === false) continue;
-      node.append(child);
-    }
+    append(node, children);
     return node;
   }
   function replace(parent, ...children) {
     parent.replaceChildren();
-    for (const child of children) {
-      if (child === null || child === void 0 || child === false) continue;
-      parent.append(child);
-    }
+    append(parent, children);
   }
   function byId(id) {
     const node = document.getElementById(id);
     if (!node) throw new Error(`the page has no #${id}`);
     return node;
+  }
+  function append(parent, children) {
+    for (const child of children) {
+      if (child === null || child === void 0 || child === false) continue;
+      parent.append(child);
+    }
   }
 
   // src/ui/page.ts
