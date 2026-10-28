@@ -57,6 +57,27 @@ function bridge(lists: Lists, object: unknown = null, ctx: Partial<K8sDockside.C
         edit: async () => null,
         logs: async () => null,
         on: () => () => {},
+        ui: { section },
+    };
+}
+
+/** The bridge's ui.section, as plain elements: a heading and a body. */
+function section(opts: K8sDockside.SectionOptions): K8sDockside.Section {
+    const root = document.createElement('section');
+    const title = document.createElement('h3');
+    title.textContent = opts.title;
+    const actions = document.createElement('div');
+    const body = document.createElement('div');
+    root.append(title, actions, body);
+    return {
+        root,
+        body,
+        actions,
+        setTitle: (text) => void (title.textContent = text),
+        setCount: () => {},
+        isFolded: () => false,
+        setFolded: () => {},
+        onToggle: () => () => {},
     };
 }
 
@@ -219,6 +240,7 @@ describe('the panels', () => {
         expect(text).toContain('mountable by many pods at once');
         expect(text).toContain('myfs');
         expect(text).toContain('the Ceph image or subvolume is deleted with it');
+        expect(text).toContain('Parameters');
     });
 
     it('says what draining a node costs', async () => {

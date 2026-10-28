@@ -291,6 +291,13 @@
     pairs.push(["Bound", view.binding === "WaitForFirstConsumer" ? "when the first pod that uses it is scheduled" : "as soon as the claim is made"]);
     pairs.push(["In use", `${view.claims} claim${view.claims === 1 ? "" : "s"}, ${size(view.requested)}${view.pending ? `, ${view.pending} pending` : ""}`]);
     const parameters = Object.entries(storageClass.parameters ?? {}).sort(([a], [b]) => a.localeCompare(b));
+    let parameterSection = null;
+    if (parameters.length > 0) {
+      const section = k8sdockside.ui.section({ id: "parameters", title: "Parameters", count: parameters.length, what: "the parameters" });
+      section.body.append(el("ul", { class: "params" }, ...parameters.map(([name, value]) => param(name, value))));
+      section.root.style.marginTop = "10px";
+      parameterSection = section.root;
+    }
     replace(
       host,
       el(
@@ -305,7 +312,7 @@
       ),
       facts(pairs),
       view.problem ? el("p", { class: "card-problem" }, view.problem) : null,
-      parameters.length > 0 ? el("div", {}, el("p", { class: "card-label", style: "margin:10px 0 0" }, "Parameters"), el("ul", { class: "params" }, ...parameters.map(([name, value]) => param(name, value)))) : null
+      parameterSection
     );
   });
 })();

@@ -984,6 +984,11 @@ dl.facts dd {
     gap: 2px;
 }
 
+/* Under a folding section's heading (k8sdockside.ui.section), which spaces it already. */
+.k8sd-section-body > .params {
+    margin-top: 0;
+}
+
 .param {
     display: grid;
     grid-template-columns: minmax(90px, max-content) 1fr;

@@ -3,7 +3,7 @@
     "id": "rookceph",
     "name": "Rook Ceph",
     "version": "1.0.0",
-    "minAppVersion": "0.1.1",
+    "minAppVersion": "0.1.36",
     "tagline": "Ceph in Kubernetes: health, capacity, pools and every storage class",
     "icon": "database",
     "logo": "logo.svg",
